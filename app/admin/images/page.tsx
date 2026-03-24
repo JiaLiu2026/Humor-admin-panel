@@ -3,8 +3,6 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase-browser'
 import Link from 'next/link'
 
-'use client'
-
 
 export default function ImagesPage() {
     const [images, setImages] = useState<any[]>([])
