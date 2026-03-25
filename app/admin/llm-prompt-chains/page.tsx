@@ -8,24 +8,25 @@ import { createClient } from "@/lib/supabase-browser";
 const COLUMNS: Column[] = [
   { key: "id", label: "ID" },
   { key: "created_datetime_utc", label: "Created" },
-  { key: "email", label: "Email" },
-  { key: "username", label: "Username" },
-  { key: "full_name", label: "Full Name" },
+  { key: "name", label: "Name" },
+  { key: "description", label: "Description" },
+  { key: "llm_model_id", label: "Model ID" },
+  { key: "is_active", label: "Active", type: "boolean" },
 ];
 
-export default function UsersPage() {
+export default function LlmPromptChainsPage() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const sb = createClient();
-    sb.from("profiles").select("*").order("created_datetime_utc", { ascending: false })
+    sb.from("llm_prompt_chains").select("*").order("id")
       .then(({ data }) => { setRows(data ?? []); setLoading(false); });
   }, []);
 
   return (
     <AdminLayout>
-      <CrudTable title="Users" columns={COLUMNS} rows={rows} loading={loading} readOnly />
+      <CrudTable title="LLM Prompt Chains" columns={COLUMNS} rows={rows} loading={loading} readOnly />
     </AdminLayout>
   );
 }

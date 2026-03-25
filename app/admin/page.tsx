@@ -1,67 +1,54 @@
-import { createClient } from '@/lib/supabase-server'
-import { redirect } from 'next/navigation'
-import Link from 'next/link'
+"use client";
 
-export const dynamic = 'force-dynamic'
+import AdminLayout from "@/components/AdminLayout";
 
-export default async function AdminPage() {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+const SECTIONS = [
+  { label: "Users", href: "/admin/users", icon: "👤", desc: "Read profiles" },
+  { label: "Images", href: "/admin/images", icon: "🖼", desc: "CRUD + upload" },
+  { label: "Captions", href: "/admin/captions", icon: "💬", desc: "Read captions" },
+  { label: "Caption Requests", href: "/admin/caption-requests", icon: "📥", desc: "Read requests" },
+  { label: "Caption Examples", href: "/admin/caption-examples", icon: "📝", desc: "CRUD" },
+  { label: "Humor Flavors", href: "/admin/humor-flavors", icon: "🎭", desc: "Read flavors" },
+  { label: "Humor Flavor Steps", href: "/admin/humor-flavor-steps", icon: "🪜", desc: "Read steps" },
+  { label: "Humor Mix", href: "/admin/humor-mix", icon: "🎛", desc: "Read / update" },
+  { label: "Terms", href: "/admin/terms", icon: "📖", desc: "CRUD" },
+  { label: "LLM Models", href: "/admin/llm-models", icon: "🤖", desc: "CRUD" },
+  { label: "LLM Providers", href: "/admin/llm-providers", icon: "🏭", desc: "CRUD" },
+  { label: "LLM Prompt Chains", href: "/admin/llm-prompt-chains", icon: "🔗", desc: "Read" },
+  { label: "LLM Responses", href: "/admin/llm-responses", icon: "📨", desc: "Read" },
+  { label: "Signup Domains", href: "/admin/signup-domains", icon: "🌐", desc: "CRUD" },
+  { label: "Whitelisted Emails", href: "/admin/whitelisted-emails", icon: "✉️", desc: "CRUD" },
+];
 
-    if (!user) redirect('/login')
-
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_superadmin')
-        .eq('id', user.id)
-        .single()
-
-    if (!profile?.is_superadmin) redirect('/login')
-
-    // Get stats
-    const [{ count: userCount }, { count: captionCount }, { count: imageCount }, { count: voteCount }] = await Promise.all([
-        supabase.from('profiles').select('*', { count: 'exact', head: true }),
-        supabase.from('captions').select('*', { count: 'exact', head: true }),
-        supabase.from('images').select('*', { count: 'exact', head: true }),
-        supabase.from('caption_votes').select('*', { count: 'exact', head: true }),
-    ])
-
-    return (
-        <main style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)', padding: '2rem', fontFamily: 'Segoe UI, sans-serif' }}>
-            <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                    <h1 style={{ color: '#fff', fontSize: '2rem', margin: 0 }}>🛠️ Admin Dashboard</h1>
-                    <a href="/admin/logout" style={{ color: '#a8a8b3', textDecoration: 'none' }}>Logout</a>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
-                    {[
-                        { label: 'Users', value: userCount, emoji: '👥' },
-                        { label: 'Captions', value: captionCount, emoji: '💬' },
-                        { label: 'Images', value: imageCount, emoji: '🖼️' },
-                        { label: 'Votes', value: voteCount, emoji: '🗳️' },
-                    ].map(stat => (
-                        <div key={stat.label} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '1.5rem', textAlign: 'center' }}>
-                            <div style={{ fontSize: '2rem' }}>{stat.emoji}</div>
-                            <div style={{ color: '#fff', fontSize: '2rem', fontWeight: 'bold' }}>{stat.value?.toLocaleString()}</div>
-                            <div style={{ color: '#a8a8b3' }}>{stat.label}</div>
-                        </div>
-                    ))}
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
-                    {[
-                        { href: '/admin/users', label: '👥 Manage Users', desc: 'View all profiles' },
-                        { href: '/admin/images', label: '🖼️ Manage Images', desc: 'Create, read, update, delete' },
-                        { href: '/admin/captions', label: '💬 Manage Captions', desc: 'View all captions' },
-                    ].map(item => (
-                        <Link key={item.href} href={item.href} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '1.5rem', textDecoration: 'none', display: 'block' }}>
-                            <div style={{ color: '#fff', fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>{item.label}</div>
-                            <div style={{ color: '#a8a8b3' }}>{item.desc}</div>
-                        </Link>
-                    ))}
-                </div>
+export default function AdminDashboard() {
+  return (
+    <AdminLayout>
+      <div style={{ marginBottom: 32 }}>
+        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "1.8rem", color: "#fff", letterSpacing: "-0.03em" }}>
+          Admin Panel
+        </h1>
+        <p style={{ color: "#2e4050", fontSize: "0.75rem", marginTop: 6, fontFamily: "'DM Mono', monospace" }}>
+          almostcrackd.ai · domain model
+        </p>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12 }}>
+        {SECTIONS.map(({ label, href, icon, desc }) => (
+          <a key={href} href={href} style={{
+            display: "block", background: "#0a0d12", border: "1px solid #141820",
+            borderRadius: 12, padding: "20px", textDecoration: "none",
+            transition: "border-color 0.2s",
+          }}
+            onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#2a4050")}
+            onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#141820")}
+          >
+            <div style={{ fontSize: "1.5rem", marginBottom: 10 }}>{icon}</div>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: "0.85rem", color: "#c8d0dc", marginBottom: 4 }}>
+              {label}
             </div>
-        </main>
-    )
+            <div style={{ fontSize: "0.65rem", color: "#2e4050", fontFamily: "'DM Mono', monospace" }}>{desc}</div>
+          </a>
+        ))}
+      </div>
+    </AdminLayout>
+  );
 }

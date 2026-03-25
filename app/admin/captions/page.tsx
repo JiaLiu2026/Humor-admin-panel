@@ -1,61 +1,35 @@
-import { createClient } from '@/lib/supabase-server'
-import { redirect } from 'next/navigation'
-import Link from 'next/link'
+"use client";
 
-export const dynamic = 'force-dynamic'
+import { useEffect, useState } from "react";
+import AdminLayout from "@/components/AdminLayout";
+import CrudTable, { Column } from "@/components/CrudTable";
+import { createClient } from "@/lib/supabase-browser";
 
-export default async function CaptionsPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+const COLUMNS: Column[] = [
+  { key: "id", label: "ID" },
+  { key: "created_datetime_utc", label: "Created" },
+  { key: "content", label: "Content" },
+  { key: "is_public", label: "Public", type: "boolean" },
+  { key: "is_featured", label: "Featured", type: "boolean" },
+  { key: "like_count", label: "Likes" },
+  { key: "humor_flavor_id", label: "Flavor ID" },
+  { key: "image_id", label: "Image ID" },
+  { key: "profile_id", label: "Profile ID" },
+];
 
-  if (!user) redirect('/login')
+export default function CaptionsPage() {
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('is_superadmin')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile?.is_superadmin) redirect('/login')
-
-  const { data: captions } = await supabase
-    .from('captions')
-    .select('id, content, created_datetime_utc, is_public')
-    .not('content', 'is', null)
-    .limit(50)
+  useEffect(() => {
+    const sb = createClient();
+    sb.from("captions").select("*").order("created_datetime_utc", { ascending: false }).limit(200)
+      .then(({ data }) => { setRows(data ?? []); setLoading(false); });
+  }, []);
 
   return (
-    <main style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)', padding: '2rem', fontFamily: 'Segoe UI, sans-serif' }}>
-      <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-          <h1 style={{ color: '#fff', fontSize: '2rem', margin: 0 }}>💬 Captions</h1>
-          <Link href="/admin" style={{ color: '#a8a8b3', textDecoration: 'none' }}>← Back</Link>
-        </div>
-        <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ background: 'rgba(255,255,255,0.05)' }}>
-                <th style={{ color: '#a8a8b3', padding: '1rem', textAlign: 'left' }}>Content</th>
-                <th style={{ color: '#a8a8b3', padding: '1rem', textAlign: 'left' }}>Created</th>
-                <th style={{ color: '#a8a8b3', padding: '1rem', textAlign: 'left' }}>Public</th>
-              </tr>
-            </thead>
-            <tbody>
-              {captions?.map((c: any) => (
-                <tr key={c.id} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                  <td style={{ color: '#fff', padding: '1rem', maxWidth: '400px' }}>{c.content}</td>
-                  <td style={{ color: '#a8a8b3', padding: '1rem', whiteSpace: 'nowrap' }}>{new Date(c.created_datetime_utc).toLocaleDateString()}</td>
-                  <td style={{ padding: '1rem' }}>
-                    <span style={{ background: c.is_public ? '#43aa8b' : '#555', color: 'white', padding: '0.2rem 0.6rem', borderRadius: '50px', fontSize: '0.8rem' }}>
-                      {c.is_public ? 'Yes' : 'No'}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </main>
-  )
+    <AdminLayout>
+      <CrudTable title="Captions" columns={COLUMNS} rows={rows} loading={loading} readOnly />
+    </AdminLayout>
+  );
 }

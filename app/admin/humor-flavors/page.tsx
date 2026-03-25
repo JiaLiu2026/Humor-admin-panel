@@ -8,24 +8,24 @@ import { createClient } from "@/lib/supabase-browser";
 const COLUMNS: Column[] = [
   { key: "id", label: "ID" },
   { key: "created_datetime_utc", label: "Created" },
-  { key: "email", label: "Email" },
-  { key: "username", label: "Username" },
-  { key: "full_name", label: "Full Name" },
+  { key: "name", label: "Name" },
+  { key: "description", label: "Description" },
+  { key: "is_active", label: "Active", type: "boolean" },
 ];
 
-export default function UsersPage() {
+export default function HumorFlavorsPage() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const sb = createClient();
-    sb.from("profiles").select("*").order("created_datetime_utc", { ascending: false })
+    sb.from("humor_flavors").select("*").order("id")
       .then(({ data }) => { setRows(data ?? []); setLoading(false); });
   }, []);
 
   return (
     <AdminLayout>
-      <CrudTable title="Users" columns={COLUMNS} rows={rows} loading={loading} readOnly />
+      <CrudTable title="Humor Flavors" columns={COLUMNS} rows={rows} loading={loading} readOnly />
     </AdminLayout>
   );
 }

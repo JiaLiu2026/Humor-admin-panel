@@ -8,24 +8,23 @@ import { createClient } from "@/lib/supabase-browser";
 const COLUMNS: Column[] = [
   { key: "id", label: "ID" },
   { key: "created_datetime_utc", label: "Created" },
-  { key: "email", label: "Email" },
-  { key: "username", label: "Username" },
-  { key: "full_name", label: "Full Name" },
+  { key: "profile_id", label: "Profile ID" },
+  { key: "image_id", label: "Image ID" },
 ];
 
-export default function UsersPage() {
+export default function CaptionRequestsPage() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const sb = createClient();
-    sb.from("profiles").select("*").order("created_datetime_utc", { ascending: false })
+    sb.from("caption_requests").select("*").order("created_datetime_utc", { ascending: false }).limit(200)
       .then(({ data }) => { setRows(data ?? []); setLoading(false); });
   }, []);
 
   return (
     <AdminLayout>
-      <CrudTable title="Users" columns={COLUMNS} rows={rows} loading={loading} readOnly />
+      <CrudTable title="Caption Requests" columns={COLUMNS} rows={rows} loading={loading} readOnly />
     </AdminLayout>
   );
 }
