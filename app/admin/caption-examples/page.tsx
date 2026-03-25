@@ -15,7 +15,7 @@ const COLUMNS: Column[] = [
 ];
 
 export default function CaptionExamplesPage() {
-  const [rows, setRows] = useState([]);
+  const [rows, setRows] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(true);
   const sb = createClient();
 

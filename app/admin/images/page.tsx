@@ -17,7 +17,7 @@ const COLUMNS: Column[] = [
 ];
 
 export default function ImagesPage() {
-  const [rows, setRows] = useState([]);
+  const [rows, setRows] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [uploadMsg, setUploadMsg] = useState("");

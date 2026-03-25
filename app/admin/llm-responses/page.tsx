@@ -16,7 +16,7 @@ const COLUMNS: Column[] = [
 ];
 
 export default function LlmResponsesPage() {
-  const [rows, setRows] = useState([]);
+  const [rows, setRows] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

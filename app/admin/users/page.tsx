@@ -14,7 +14,7 @@ const COLUMNS: Column[] = [
 ];
 
 export default function UsersPage() {
-  const [rows, setRows] = useState([]);
+  const [rows, setRows] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

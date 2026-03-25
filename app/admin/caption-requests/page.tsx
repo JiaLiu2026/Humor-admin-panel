@@ -13,7 +13,7 @@ const COLUMNS: Column[] = [
 ];
 
 export default function CaptionRequestsPage() {
-  const [rows, setRows] = useState([]);
+  const [rows, setRows] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
