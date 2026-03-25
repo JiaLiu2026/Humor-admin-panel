@@ -1,8 +1,8 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase-browser";
 import FlavorList from "./FlavorList";
-
-"use client";
 
 
 export default function PromptChainPage() {
