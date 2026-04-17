@@ -51,6 +51,49 @@ export default function FlavorList() {
     await load();
   };
 
+  const handleDuplicate = async (flavor: Flavor) => {
+    // Generate a unique slug
+    const existingSlugs = new Set(flavors.map((f) => f.slug));
+    let suffix = 1;
+    let newSlug = `${flavor.slug}-copy`;
+    while (existingSlugs.has(newSlug)) {
+      suffix++;
+      newSlug = `${flavor.slug}-copy-${suffix}`;
+    }
+
+    // Create the new flavor
+    const { data: newFlavor, error: flavorErr } = await sb
+      .from("humor_flavors")
+      .insert({ slug: newSlug, description: `${flavor.description} (copy)` })
+      .select("id")
+      .single();
+
+    if (flavorErr || !newFlavor) {
+      alert("Failed to duplicate flavor: " + (flavorErr?.message ?? "unknown error"));
+      return;
+    }
+
+    // Copy all steps from the original flavor
+    const { data: steps } = await sb
+      .from("humor_flavor_steps")
+      .select("*")
+      .eq("humor_flavor_id", flavor.id)
+      .order("order_by");
+
+    if (steps && steps.length > 0) {
+      const newSteps = steps.map(({ id, humor_flavor_id, ...rest }: any) => ({
+        ...rest,
+        humor_flavor_id: newFlavor.id,
+      }));
+      const { error: stepsErr } = await sb.from("humor_flavor_steps").insert(newSteps);
+      if (stepsErr) {
+        alert("Flavor duplicated but some steps failed to copy: " + stepsErr.message);
+      }
+    }
+
+    await load();
+  };
+
   const handleUpdate = async (id: number, data: Partial<Flavor>) => {
     await sb.from("humor_flavors").update(data).eq("id", id);
     await load();
@@ -104,6 +147,7 @@ export default function FlavorList() {
         <FlavorCard key={f.id} flavor={f}
           onEdit={() => setSelected(f)}
           onDelete={() => handleDelete(f.id)}
+          onDuplicate={() => handleDuplicate(f)}
           onUpdate={(data) => handleUpdate(f.id, data)}
         />
       ))}
@@ -111,10 +155,11 @@ export default function FlavorList() {
   );
 }
 
-function FlavorCard({ flavor, onEdit, onDelete, onUpdate }: {
+function FlavorCard({ flavor, onEdit, onDelete, onDuplicate, onUpdate }: {
   flavor: Flavor;
   onEdit: () => void;
   onDelete: () => void;
+  onDuplicate: () => void;
   onUpdate: (data: Partial<Flavor>) => void;
 }) {
   const [editing, setEditing] = useState(false);
@@ -150,6 +195,7 @@ function FlavorCard({ flavor, onEdit, onDelete, onUpdate }: {
           </div>
           <div style={{ display: "flex", gap: 8 }}>
             <button style={s.btn()} onClick={() => setEditing(true)}>Edit</button>
+            <button style={s.btn()} onClick={onDuplicate}>Duplicate</button>
             <button style={s.btn("primary")} onClick={onEdit}>Manage Steps →</button>
             <button style={s.btn("danger")} onClick={onDelete}>Delete</button>
           </div>
