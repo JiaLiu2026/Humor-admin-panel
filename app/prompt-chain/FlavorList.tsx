@@ -163,6 +163,7 @@ function FlavorCard({ flavor, onEdit, onDelete, onDuplicate, onUpdate }: {
   onUpdate: (data: Partial<Flavor>) => void;
 }) {
   const [editing, setEditing] = useState(false);
+  const [duplicating, setDuplicating] = useState(false);
   const [form, setForm] = useState({ description: flavor.description, slug: flavor.slug });
 
   const save = () => { onUpdate(form); setEditing(false); };
@@ -195,7 +196,9 @@ function FlavorCard({ flavor, onEdit, onDelete, onDuplicate, onUpdate }: {
           </div>
           <div style={{ display: "flex", gap: 8 }}>
             <button style={s.btn()} onClick={() => setEditing(true)}>Edit</button>
-            <button style={s.btn()} onClick={onDuplicate}>Duplicate</button>
+            <button style={s.btn()} disabled={duplicating} onClick={async () => { setDuplicating(true); await onDuplicate(); setDuplicating(false); }}>
+              {duplicating ? "Duplicating..." : "Duplicate"}
+            </button>
             <button style={s.btn("primary")} onClick={onEdit}>Manage Steps →</button>
             <button style={s.btn("danger")} onClick={onDelete}>Delete</button>
           </div>
